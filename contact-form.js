@@ -1,15 +1,10 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Starlight Lane — Contact Form Handler
-// Add this script to your contact page.
-// ─────────────────────────────────────────────────────────────────────────────
-
 const BACKEND_URL = "https://starlightlane-backend.onrender.com/contact";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("contact-form"); // update selector if needed
+  const form = document.getElementById("contact-form");
 
   if (!form) {
-    console.warn("Contact form not found. Check the id on your <form> element.");
+    console.warn("Contact form not found.");
     return;
   }
 
@@ -24,15 +19,36 @@ document.addEventListener("DOMContentLoaded", () => {
       submitBtn.textContent = "Sending…";
     }
 
-    // Read field values — update the name/id selectors to match your HTML
+    // Map volume slug to display string
+    const volumeMap = {
+      "under-10k":  "Under $10k",
+      "10k-50k":    "$10k–$50k",
+      "50k-250k":   "$50k–$250k",
+      "250k-1m":    "$250k–$1M",
+      "over-1m":    "Over $1M",
+      "not-sure":   "Not sure yet",
+    };
+
+    // Map interest slug to display string
+    const reasonMap = {
+      "processing": "Lower my processing rate",
+      "holdback":   "Recover a holdback or reserve",
+      "ai":         "Add AI to my existing setup",
+      "full":       "All of the above",
+      "other":      "Something else",
+    };
+
+    const volumeRaw = form.querySelector('[name="volume"]')?.value;
+    const reasonRaw = form.querySelector('[name="interest"]')?.value;
+
     const payload = {
-      firstName:      form.querySelector('[name="firstName"]')?.value.trim(),
-      lastName:       form.querySelector('[name="lastName"]')?.value.trim(),
+      firstName:      form.querySelector('[name="fname"]')?.value.trim(),
+      lastName:       form.querySelector('[name="lname"]')?.value.trim(),
       email:          form.querySelector('[name="email"]')?.value.trim(),
       company:        form.querySelector('[name="company"]')?.value.trim(),
-      monthlyVolume:  form.querySelector('[name="monthlyVolume"]')?.value,
-      reason:         form.querySelector('[name="reason"]')?.value,
-      additionalInfo: form.querySelector('[name="additionalInfo"]')?.value.trim(),
+      monthlyVolume:  volumeMap[volumeRaw] || volumeRaw,
+      reason:         reasonMap[reasonRaw] || reasonRaw,
+      additionalInfo: form.querySelector('[name="message"]')?.value.trim(),
     };
 
     try {
@@ -45,11 +61,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
 
       if (data.success) {
-        // ✅ Success — customize this to match your site's UI
         form.innerHTML = `
           <div style="text-align:center; padding: 2rem;">
-            <p style="font-size: 1.25rem; font-weight: 600;">Thanks, ${payload.firstName}!</p>
-            <p>We'll be in touch at ${payload.email} soon.</p>
+            <p style="font-size: 1.25rem; font-weight: 600; color: var(--lime);">Thanks, ${payload.firstName}!</p>
+            <p style="color: var(--bone-dim); margin-top: 8px;">We'll be in touch at ${payload.email} soon.</p>
           </div>
         `;
       } else {
